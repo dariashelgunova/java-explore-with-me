@@ -30,11 +30,9 @@ public class StatsClient extends BaseClient {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,
-                "uris", uris,
+                "uris", String.join("&uris=", uris),
                 "unique", unique
         );
-        http:
-//localhost:9090/stats?start=2020-05-05 00:00:00&end=2035-05-05 00:00:00&uris=/events/1&uris=/events/2
 
         return get("?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
     }

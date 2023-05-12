@@ -22,6 +22,4 @@ public class Hit {
     String ip;
     @Column(name = "time")
     LocalDateTime timestamp;
-    Integer hitsAmount;
-
 }

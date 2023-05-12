@@ -48,28 +48,6 @@ public class HitMapper {
         return hitDto;
     }
 
-    public List<ViewStats> toViewStatsList(List<Hit> hits) {
-        List<ViewStats> result = new ArrayList<>();
-        for (Hit hit : hits) {
-            result.add(toViewStats(hit));
-        }
-        return result;
-    }
-
-    public ViewStats toViewStats(Hit hit) {
-        if (hit == null) {
-            return null;
-        }
-
-        ViewStats viewStats = new ViewStats();
-
-        viewStats.setApp(hit.getApp());
-        viewStats.setUri(hit.getUri());
-        viewStats.setHits(hit.getHitsAmount());
-
-        return viewStats;
-    }
-
     public List<ViewStats> toViewStatsListFromView(List<HitView> hits) {
         List<ViewStats> result = new ArrayList<>();
         for (HitView hit : hits) {
@@ -91,7 +69,6 @@ public class HitMapper {
 
         return viewStats;
     }
-
 
     public LocalDateTime toLocalDateTime(String time) {
         if (time == null) {

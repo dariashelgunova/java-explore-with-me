@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import ru.practicum.exception.StatsEndTimeException;
 import ru.practicum.model.Hit;
 import ru.practicum.repository.StatsRepository;
 import ru.practicum.view.HitView;
@@ -24,6 +25,7 @@ public class StatsServiceImpl implements StatsService {
     }
 
     public List<HitView> getStats(LocalDateTime start, LocalDateTime end, String[] uris, boolean unique) {
+        checkIfEndAfterStart(start, end);
 
         if (unique) {
             if (uris == null) {
@@ -39,6 +41,12 @@ public class StatsServiceImpl implements StatsService {
                 List<String> urisList = Arrays.asList(uris);
                 return repository.getStats(start, end, urisList);
             }
+        }
+    }
+
+    private void checkIfEndAfterStart(LocalDateTime start, LocalDateTime end) {
+        if (end.isBefore(start)) {
+            throw new StatsEndTimeException("Время окончания не может быть раньше времени начала!");
         }
     }
 }

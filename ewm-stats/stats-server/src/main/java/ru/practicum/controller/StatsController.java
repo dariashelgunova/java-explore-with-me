@@ -3,6 +3,7 @@ package ru.practicum.controller;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.mapper.HitMapper;
 import ru.practicum.model.EndpointHit;
@@ -31,13 +32,11 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(@RequestParam String start,
-                                    @RequestParam String end,
+    public List<ViewStats> getStats(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                     @RequestParam(required = false) String[] uris,
                                     @RequestParam(defaultValue = "false") boolean unique) {
-        LocalDateTime startTime = hitMapper.toLocalDateTime(start);
-        LocalDateTime endTime = hitMapper.toLocalDateTime(end);
-        List<HitView> result = statsService.getStats(startTime, endTime, uris, unique);
+        List<HitView> result = statsService.getStats(start, end, uris, unique);
         return hitMapper.toViewStatsListFromView(result);
     }
 
