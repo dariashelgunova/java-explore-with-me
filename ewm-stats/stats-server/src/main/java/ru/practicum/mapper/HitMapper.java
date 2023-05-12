@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class HitMapper {
 
-    private final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public Hit fromEndpointHit(EndpointHit hitDto) {
         if (hitDto == null) {
