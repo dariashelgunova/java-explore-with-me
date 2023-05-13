@@ -11,8 +11,28 @@
 	</parent>
 
 	<name>Explore With Me</name>
+    <modules>
+        <module>ewm-stats</module>
+		<module>ewm-main</module>
+	</modules>
 
-	<groupId>ru.practicum</groupId>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.glassfish</groupId>
+				<artifactId>javax.el</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.12.0</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+    <groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
