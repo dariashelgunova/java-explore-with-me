@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
@@ -53,6 +54,7 @@ public class AdminController {
 
 
     @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@Valid @RequestBody NewCategoryDto categoryDto) {
         Category newCategory = categoryMapper.fromDto(categoryDto);
         Category createdCategory = categoryService.createCategoryAdmin(newCategory);
@@ -60,6 +62,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/categories/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategoryById(@PathVariable("catId") Integer catId) {
         categoryService.deleteCategoryByIdAdmin(catId);
     }
@@ -81,7 +84,6 @@ public class AdminController {
             @RequestParam(defaultValue = "2050-01-01 00:00:01") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size) {
-
         List<Event> result = eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
         return eventMapper.toFullDtoList(result);
     }
@@ -104,6 +106,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
     public UserDto createAdminUsers(@Valid @RequestBody NewUserRequest userDto) {
         User newUser = userMapper.fromDto(userDto);
         User createdUser = userService.createUserAdmin(newUser);
@@ -111,11 +114,13 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAdminUserById(@PathVariable("userId") Integer userId) {
         userService.deleteUserByIdAdmin(userId);
     }
 
     @PostMapping("/compilations")
+    @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createAdminCompilation(@Valid @RequestBody NewCompilationDto compilationDto) {
         List<Event> events = eventService.findEventsByIds(compilationDto.getEvents());
         Compilation newCompilation = compilationMapper.fromDto(compilationDto, events);

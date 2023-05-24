@@ -30,11 +30,11 @@ public class ControllerExceptionHandler {
     }
 
 
-    @ExceptionHandler(value = Throwable.class)
-    public ResponseEntity<ErrorDetails> handleUncheckedException(Throwable ex) {
-        log.debug(String.valueOf(ex));
-        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage());
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public ResponseEntity<ErrorDetails> handleUncheckedException(Throwable ex) {
+//        log.debug(String.valueOf(ex));
+//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage());
+//    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDetails> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {

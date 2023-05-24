@@ -26,6 +26,7 @@ import ru.practicum.service.user.UserService;
 import ru.practicum.view.EventView;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -37,6 +38,7 @@ public class EventServiceImpl implements EventService {
     UserService userService;
     StatsClient statsClient;
     HitClient hitClient;
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public void checkIfThereAreNoEventsInCategory(Category category) {
         List<Event> eventsByCategory = eventRepository.findByCategoryId(category.getId());
@@ -217,18 +219,20 @@ public class EventServiceImpl implements EventService {
         uris[0] = "/events/" + event.getId();
         LocalDateTime start = LocalDateTime.now().minusYears(5);
         LocalDateTime end = LocalDateTime.now().plusYears(5);
-        ResponseEntity<Object> result = statsClient.getStats(start.toString(), end.toString(), uris, false);
+        ResponseEntity<Object> result = statsClient.getStats(start.format(dateTimeFormatter), end.format(dateTimeFormatter), uris, true);
         Object statsObject =  result.getBody();
         if (statsObject != null) {
-            ViewStats stats = new ObjectMapper().convertValue(statsObject, ViewStats.class);
-            event.setViews(stats.getHits());
+            List<ViewStats> stats = Arrays.asList(new ObjectMapper().convertValue(statsObject, ViewStats[].class));
+            if (!stats.isEmpty()) {
+                event.setViews(stats.get(0).getHits());
+            }
         }
         return event;
     }
 
     private void sendStats(String uri, String ip) {
         EndpointHit hit = new EndpointHit();
-        hit.setTimestamp(LocalDateTime.now().toString());
+        hit.setTimestamp(LocalDateTime.now().format(dateTimeFormatter));
         hit.setUri(uri);
         hit.setIp(ip);
         hit.setApp("ewm-main-service");
