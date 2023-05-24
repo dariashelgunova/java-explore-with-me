@@ -15,7 +15,7 @@ public class EventTimeLimitValidator implements ConstraintValidator<EventTimeLim
         LocalDateTime currentTime = LocalDateTime.now();
 
         if (eventDate == null) {
-            return false;
+            return true;
         }
         return eventDate.isAfter(currentTime.plus(2, ChronoUnit.HOURS));
     }

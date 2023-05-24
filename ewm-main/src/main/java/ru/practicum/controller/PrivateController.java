@@ -3,6 +3,7 @@ package ru.practicum.controller;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.event.*;
 import ru.practicum.dto.event.EventFullDto;
@@ -17,6 +18,7 @@ import ru.practicum.service.category.CategoryService;
 import ru.practicum.service.event.EventService;
 import ru.practicum.service.eventrequest.EventRequestService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -39,8 +41,9 @@ public class PrivateController {
     }
 
     @PostMapping("/{userId}/events")
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable("userId") Integer userId,
-                                    @RequestBody NewEventDto eventDto) {
+                                    @Valid @RequestBody NewEventDto eventDto) {
         Event newEvent = eventMapper.fromDto(eventDto, categoryService.findCategoryByIdPublic(eventDto.getCategory()));
         Event createdEvent = eventService.createEventPrivate(userId, newEvent);
         return eventMapper.toFullDto(createdEvent);
@@ -56,7 +59,7 @@ public class PrivateController {
     @PatchMapping("/{userId}/events/{eventId}")
     public EventFullDto updateEvent(@PathVariable("userId") Integer userId,
                                     @PathVariable("eventId") Integer eventId,
-                                    @RequestBody UpdateEventUserRequest eventDto) {
+                                    @Valid @RequestBody UpdateEventUserRequest eventDto) {
         Event newEvent = eventMapper.fromDto(eventDto, categoryService.findCategoryByIdPublic(eventDto.getCategory()));
         Event updatedEvent = eventService.updateEventPrivate(userId, eventId, newEvent);
         return eventMapper.toFullDto(updatedEvent);
@@ -84,7 +87,8 @@ public class PrivateController {
     }
 
     @PostMapping("/{userId}/requests")
-    public ParticipationRequestDto getEventsRequests(@PathVariable("userId") Integer userId,
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationRequestDto createEventRequest(@PathVariable("userId") Integer userId,
                                                      @RequestParam("eventId") Integer eventId) {
         EventRequest result = eventRequestService.createEventRequestPrivate(userId, eventId);
         return eventRequestMapper.toParticipationDto(result);
@@ -92,7 +96,7 @@ public class PrivateController {
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")
     public ParticipationRequestDto cancelRequest(@PathVariable("userId") Integer userId,
-                                                     @PathVariable("requestId") Integer requestId) {
+                                                 @PathVariable("requestId") Integer requestId) {
         EventRequest result = eventRequestService.cancelEventRequestPrivate(userId, requestId);
         return eventRequestMapper.toParticipationDto(result);
     }

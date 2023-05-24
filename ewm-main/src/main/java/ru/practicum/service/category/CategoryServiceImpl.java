@@ -42,6 +42,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private Category getCategoryByIdOrThrowException(Integer catId) {
+        if (catId == null) {
+            return null;
+        }
         return categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundObjectException("Объект не был найден"));
     }

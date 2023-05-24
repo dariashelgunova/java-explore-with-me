@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.*;
@@ -17,46 +21,52 @@ import static org.springframework.http.HttpStatus.*;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(value = javax.validation.ValidationException.class)
-    public ResponseEntity<ErrorDetails> handleValidationException(javax.validation.ValidationException ex) {
+    public ResponseEntity<ApiError> handleValidationException(javax.validation.ValidationException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(BAD_REQUEST, ex.getMessage());
+        return buildErrorResponse(BAD_REQUEST, ex);
+    }
+
+    @ExceptionHandler(value = BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex) {
+        log.debug(String.valueOf(ex));
+        return buildErrorResponse(BAD_REQUEST, ex);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorDetails> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(BAD_REQUEST, ex.getMessage());
+        return buildErrorResponse(BAD_REQUEST, ex);
     }
 
 
-    @ExceptionHandler(value = Throwable.class)
-    public ResponseEntity<ErrorDetails> handleUncheckedException(Throwable ex) {
-        log.debug(String.valueOf(ex));
-        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage());
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
+//        log.debug(String.valueOf(ex));
+//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
+//    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetails> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(BAD_REQUEST, getErrorDescription(ex));
+        return buildErrorResponse(BAD_REQUEST, ex);
     }
 
     @ExceptionHandler(value = NotFoundObjectException.class)
-    public ResponseEntity<ErrorDetails> handleNotFoundObjectException(NotFoundObjectException ex) {
+    public ResponseEntity<ApiError> handleNotFoundObjectException(NotFoundObjectException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(NOT_FOUND, ex.getMessage());
+        return buildErrorResponse(NOT_FOUND, ex);
     }
 
     @ExceptionHandler(value = NumberFormatException.class)
-    public ResponseEntity<ErrorDetails> handleNumberFormatException(NumberFormatException ex) {
+    public ResponseEntity<ApiError> handleNumberFormatException(NumberFormatException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(BAD_REQUEST, ex.getMessage());
+        return buildErrorResponse(BAD_REQUEST, ex);
     }
 
     @ExceptionHandler(value = ConflictException.class)
-    public ResponseEntity<ErrorDetails> handleConflictException(ConflictException ex) {
+    public ResponseEntity<ApiError> handleConflictException(ConflictException ex) {
         log.debug(String.valueOf(ex));
-        return buildErrorResponse(CONFLICT, ex.getMessage());
+        return buildErrorResponse(CONFLICT, ex);
     }
 
 
@@ -66,9 +76,22 @@ public class ControllerExceptionHandler {
                 .collect(Collectors.joining(", "));
     }
 
-    private ResponseEntity<ErrorDetails> buildErrorResponse(HttpStatus status, String message) {
-        ErrorDetails error = new ErrorDetails(status.value(), message);
+    private ResponseEntity<ApiError> buildErrorResponse(HttpStatus status, Throwable ex) {
+        ApiError error = ApiError.builder()
+                .status(status.getReasonPhrase())
+                .errors(getTrace(ex))
+                .message(ex.getMessage())
+                .reason(Optional.of(ex)
+                        .map(Throwable::getCause)
+                        .map(Throwable::getMessage)
+                        .orElse(null))
+                .timestamp(LocalDateTime.now())
+                .build();
         return new ResponseEntity<>(error, status);
+    }
+
+    private List<String> getTrace(Throwable ex) {
+        return Arrays.stream(ex.getStackTrace()).map(String::valueOf).collect(Collectors.toList());
     }
 
 }

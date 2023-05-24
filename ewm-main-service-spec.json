@@ -1576,7 +1576,7 @@
                 "example": {
                   "status": "FORBIDDEN",
                   "reason": "For the requested operation the conditions are not met.",
-                  "message": "Only pending or canceled events can be changed",
+                  "message": "Only pending or cancelled events can be changed",
                   "timestamp": "2022-09-07 09:10:50"
                 },
                 "schema": {
@@ -1994,7 +1994,7 @@
           "message": {
             "type": "string",
             "description": "Сообщение об ошибке",
-            "example": "Only pending or canceled events can be changed"
+            "example": "Only pending or cancelled events can be changed"
           },
           "reason": {
             "type": "string",

@@ -22,12 +22,17 @@ import ru.practicum.model.Category;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
+import ru.practicum.model.enums.State;
 import ru.practicum.service.category.CategoryService;
 import ru.practicum.service.compilation.CompilationService;
 import ru.practicum.service.event.EventService;
 import ru.practicum.service.user.UserService;
 
+import javax.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 
 @RestController
@@ -44,9 +49,11 @@ public class AdminController {
     UserMapper userMapper;
     EventService eventService;
     EventMapper eventMapper;
+//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
     @PostMapping("/categories")
-    public CategoryDto createCategory(@RequestBody NewCategoryDto categoryDto) {
+    public CategoryDto createCategory(@Valid @RequestBody NewCategoryDto categoryDto) {
         Category newCategory = categoryMapper.fromDto(categoryDto);
         Category createdCategory = categoryService.createCategoryAdmin(newCategory);
         return categoryMapper.toDto(createdCategory);
@@ -59,7 +66,7 @@ public class AdminController {
 
     @PatchMapping("/categories/{catId}")
     public CategoryDto updateCategory(@PathVariable("catId") Integer catId,
-                                      @RequestBody CategoryDto categoryDto) {
+                                      @Valid @RequestBody CategoryDto categoryDto) {
         Category newCategory = categoryMapper.fromDto(categoryDto);
         Category updatedCategory = categoryService.updateCategoryAdmin(catId, newCategory);
         return categoryMapper.toDto(updatedCategory);
@@ -67,20 +74,21 @@ public class AdminController {
 
     @GetMapping("/events")
     public List<EventFullDto> getAdminEvents(
-            @RequestParam Integer[] users,
-            @RequestParam String[] states,
-            @RequestParam Integer[] categories,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "0") List<Integer> users,
+            @RequestParam(defaultValue = "PENDING, PUBLISHED, CANCELED") List<State> states,
+            @RequestParam(defaultValue = "0") List<Integer> categories,
+            @RequestParam(defaultValue = "2020-01-01 00:00:01") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+            @RequestParam(defaultValue = "2050-01-01 00:00:01") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size) {
+
         List<Event> result = eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
         return eventMapper.toFullDtoList(result);
     }
 
     @PatchMapping("/events/{eventId}")
     public EventFullDto updateEventAndStatus(@PathVariable("eventId") Integer eventId,
-                                             @RequestBody UpdateEventAdminRequest eventDto) {
+                                             @Valid @RequestBody UpdateEventAdminRequest eventDto) {
         Event event = eventMapper.fromDto(eventDto, categoryService.findCategoryByIdPublic(eventDto.getCategory()));
         Event updatedEvent = eventService.updateEventAdmin(eventId, event);
         return eventMapper.toFullDto(updatedEvent);
@@ -88,7 +96,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public List<UserDto> getAdminUsers(
-            @RequestParam Integer[] ids,
+            @RequestParam List<Integer> ids,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size) {
         List<User> result = userService.findUsersAdmin(ids, from, size);
@@ -96,7 +104,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public UserDto createAdminUsers(@RequestBody NewUserRequest userDto) {
+    public UserDto createAdminUsers(@Valid @RequestBody NewUserRequest userDto) {
         User newUser = userMapper.fromDto(userDto);
         User createdUser = userService.createUserAdmin(newUser);
         return userMapper.toDto(createdUser);
@@ -108,7 +116,7 @@ public class AdminController {
     }
 
     @PostMapping("/compilations")
-    public CompilationDto createAdminCompilation(@RequestBody NewCompilationDto compilationDto) {
+    public CompilationDto createAdminCompilation(@Valid @RequestBody NewCompilationDto compilationDto) {
         List<Event> events = eventService.findEventsByIds(compilationDto.getEvents());
         Compilation newCompilation = compilationMapper.fromDto(compilationDto, events);
         Compilation result = compilationService.createCompilationAdmin(newCompilation);

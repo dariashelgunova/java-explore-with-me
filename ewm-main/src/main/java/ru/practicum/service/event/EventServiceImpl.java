@@ -1,5 +1,6 @@
 package ru.practicum.service.event;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.client.HitClient;
 import ru.practicum.client.StatsClient;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.*;
@@ -21,13 +23,11 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.LocationRepository;
 import ru.practicum.service.eventrequest.EventRequestService;
 import ru.practicum.service.user.UserService;
+import ru.practicum.view.EventView;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,6 @@ public class EventServiceImpl implements EventService {
     UserService userService;
     StatsClient statsClient;
     HitClient hitClient;
-    LocationRepository locationRepository;
 
     public void checkIfThereAreNoEventsInCategory(Category category) {
         List<Event> eventsByCategory = eventRepository.findByCategoryId(category.getId());
@@ -73,7 +72,10 @@ public class EventServiceImpl implements EventService {
     public Event updateEventPrivate(Integer userId, Integer eventId, Event event) {
         userService.findUserById(userId);
         Event existingEvent = getEventByIdOrThrowException(eventId);
-        if (existingEvent.getState().equals(State.PUBLISHED)) {
+        if (event.getStateAction() == null) {
+            return changeEventFields(existingEvent, event);
+        }
+        if (Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PUBLISHED)) {
             throw new ConflictException("Редактируемое событие не может быть опубликованным!");
         } else {
             changeEventFields(existingEvent, event);
@@ -81,6 +83,8 @@ public class EventServiceImpl implements EventService {
                 existingEvent.setState(State.PUBLISHED);
             } else if (event.getStateAction().equals(StateAction.REJECT_EVENT)) {
                 existingEvent.setState(State.CANCELED);
+            } else if (event.getStateAction().equals(StateAction.SEND_TO_REVIEW)) {
+                existingEvent.setState(State.PENDING);
             }
         }
         return eventRepository.save(existingEvent);
@@ -89,52 +93,71 @@ public class EventServiceImpl implements EventService {
     private Event changeEventFields(Event existingEvent, Event newEvent) {
         if (newEvent.getAnnotation() != null) {
             existingEvent.setAnnotation(newEvent.getAnnotation());
-        } else if (newEvent.getCategory() != null) {
+        }
+        if (newEvent.getCategory() != null) {
             existingEvent.setCategory(newEvent.getCategory());
-        } else if (newEvent.getDescription() != null) {
+        }
+        if (newEvent.getDescription() != null) {
             existingEvent.setDescription(newEvent.getDescription());
-        } else if (newEvent.getEventDate() != null) {
+        }
+        if (newEvent.getEventDate() != null) {
             existingEvent.setEventDate(newEvent.getEventDate());
-        } else if (newEvent.getLocation() != null) {
+        }
+        if (newEvent.getLocation() != null) {
             existingEvent.setLocation(newEvent.getLocation());
-        } else if (newEvent.getPaid() != null) {
-            existingEvent.setPaid(newEvent.getPaid());
-        } else if (newEvent.getParticipantLimit() != null) {
+        }
+//        if (newEvent.getPaid() != null) {
+//            existingEvent.setPaid(newEvent.getPaid());
+//        }
+        if (newEvent.getParticipantLimit() != null) {
             existingEvent.setParticipantLimit(newEvent.getParticipantLimit());
-        } else if (newEvent.getRequestModeration() != null) {
+        }
+        if (newEvent.getRequestModeration() != null) {
             existingEvent.setRequestModeration(newEvent.getRequestModeration());
-        } else if (newEvent.getState() != null) {
+        }
+        if (newEvent.getState() != null) {
             existingEvent.setState(newEvent.getState());
-        } else if (newEvent.getTitle() != null) {
+        }
+        if (newEvent.getTitle() != null) {
             existingEvent.setTitle(newEvent.getTitle());
-        } else if (newEvent.getPublishedOn() != null) {
+        }
+        if (newEvent.getPublishedOn() != null) {
             existingEvent.setPublishedOn(newEvent.getPublishedOn());
         }
         return eventRepository.save(existingEvent);
     }
 
-    public List<Event> getEventsAdmin(Integer[] users, String[] states, Integer[] categories, LocalDateTime rangeStart,
+    public List<Event> getEventsAdmin(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart,
                                       LocalDateTime rangeEnd, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
-        List<Integer> listUserIds = Arrays.asList(users);
-        List<String> listStates = Arrays.asList(states);
-        List<Integer> listCategoriesIds = Arrays.asList(categories);
-        return eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(listUserIds, listStates,
-                listCategoriesIds, rangeStart, rangeEnd, pageable);
+//        List<EventView> result = eventRepository.getEventsAdmin(users, states,
+//                categories, rangeStart, rangeEnd, pageable);
+//        List<Event> events = new ArrayList<>();
+//        for (EventView view : result) {
+//            events.add(setFields(view));
+//        }
+        return eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(users, states,
+                categories, rangeStart, rangeEnd, pageable);
     }
 
     public Event saveEvent(Event event) {
+        if (event.getState() == null) {
+            event.setState(State.PENDING);
+        }
         return eventRepository.save(event);
     }
 
     public Event updateEventAdmin(Integer eventId, Event event) {
         LocalDateTime currentTime = LocalDateTime.now();
         Event existingEvent = getEventByIdOrThrowException(eventId);
+        if (event.getStateAction() == null) {
+            return changeEventFields(existingEvent, event);
+        }
         if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) && currentTime.plusHours(1).isAfter(existingEvent.getEventDate())) {
             throw new ConflictException("Редактировать событие нужно как минимум за час до публикации!");
-        } else if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) && !existingEvent.getState().equals(State.PENDING)) {
+        } else if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) && (!Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PENDING))) {
             throw new ConflictException("Опубликовать событие можно, только если оно в состоянии ожидания публикации!");
-        } else if (event.getStateAction().equals(StateAction.REJECT_EVENT) && existingEvent.getState().equals(State.PUBLISHED)) {
+        } else if (event.getStateAction().equals(StateAction.REJECT_EVENT) && (existingEvent.getState().equals(State.PUBLISHED))) {
             throw new ConflictException("Отклонить можно только еще неопубликованное событие!");
         } else {
             if (event.getStateAction().equals(StateAction.PUBLISH_EVENT)) {
@@ -148,34 +171,39 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    public List<Event> getEventsPublic(String text, Integer[] categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
+    public List<Event> getEventsPublic(String text, List<Integer> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                        boolean onlyAvailable, SortEnum sortEnum, Integer from, Integer size, String ip) {
+        if (rangeStart != null && rangeEnd != null) {
+            if (rangeStart.isAfter(rangeEnd)) {
+                throw new BadRequestException("Время начала не может быть позже окончания!");
+            }
+        }
         Sort sort;
         if (sortEnum == SortEnum.EVENT_DATE) {
             sort = Sort.by(Sort.Direction.ASC, "event_date");
         } else {
             sort = null;
         }
-        List<Event> result;
+        List<Event> result = new ArrayList<>();
+        List<EventView> subResult;
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, sort);
-        List<Integer> categoriesIds = Arrays.asList(categories);
         LocalDateTime currentTime = LocalDateTime.now();
 
         if (paid == null) {
             if (rangeStart == null || rangeEnd == null) {
-                result = eventRepository.getEvents(text, text, categoriesIds, currentTime, onlyAvailable, pageable);
+                result = eventRepository.getEvents(text, text, categories, currentTime, onlyAvailable, pageable);
             } else {
-                result = eventRepository.getEvents(text, text, categoriesIds, rangeStart, rangeEnd, onlyAvailable, pageable);
+                result = eventRepository.getEvents(text, text, categories, rangeStart, rangeEnd, onlyAvailable, pageable);
             }
         } else {
             if (rangeStart == null || rangeEnd == null) {
-                result = eventRepository.getEvents(text, text, categoriesIds,paid, currentTime, onlyAvailable, pageable);
+                result = eventRepository.getEvents(text, text, categories, paid, currentTime, onlyAvailable, pageable);
             } else {
-                result = eventRepository.getEvents(text, text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, pageable);
+                result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable);
             }
         }
         for (Event event : result) {
-            setStatsByEvent(event);
+            result.add(setStatsByEvent(event));
         }
         sendStats("/events", ip);
         if (sortEnum == SortEnum.VIEWS) {
@@ -190,8 +218,11 @@ public class EventServiceImpl implements EventService {
         LocalDateTime start = LocalDateTime.now().minusYears(5);
         LocalDateTime end = LocalDateTime.now().plusYears(5);
         ResponseEntity<Object> result = statsClient.getStats(start.toString(), end.toString(), uris, false);
-        ViewStats stats = (ViewStats) result.getBody();
-        event.setViews(stats.getHits());
+        Object statsObject =  result.getBody();
+        if (statsObject != null) {
+            ViewStats stats = new ObjectMapper().convertValue(statsObject, ViewStats.class);
+            event.setViews(stats.getHits());
+        }
         return event;
     }
 
@@ -211,12 +242,19 @@ public class EventServiceImpl implements EventService {
         } else {
             Event event = result.get(0);
             sendStats("/events/" + event.getId(), ip);
-            return setStatsByEvent(event);
+            return setStatsByEvent(result.get(0));
         }
     }
 
     public List<Event> findEventsByIds(List<Integer> ids) {
         return eventRepository.findByIdIn(ids);
     }
+//    private Event setFields(EventView eventView) {
+//        return new Event(eventView.getId(), eventView.getAnnotation(), eventView.getCategory(), eventView.getConfirmedRequests(),
+//                eventView.getAvailable(), eventView.getCreatedOn(), eventView.getDescription(), eventView.getEventDate(),
+//                eventView.getInitiator(), eventView.getLocation(), eventView.getPaid(), eventView.getParticipantLimit(),
+//                eventView.getPublishedOn(), eventView.getRequestModeration(), eventView.getState(), eventView.getTitle(),
+//                null, 0, null);
+//    }
 
 }

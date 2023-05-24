@@ -24,7 +24,9 @@ import ru.practicum.service.compilation.CompilationService;
 import ru.practicum.service.event.EventService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -38,6 +40,7 @@ public class PublicController {
     CategoryMapper categoryMapper;
     EventService eventService;
     EventMapper eventMapper;
+//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @GetMapping("/compilations")
     public List<CompilationDto> getEventCompilations(@RequestParam(required = false) Boolean pinned,
@@ -68,17 +71,23 @@ public class PublicController {
 
     @GetMapping("/events")
     public List<EventShortDto> getPublicEvents(
-            @RequestParam String text,
-            @RequestParam Integer[] categories,
+            @RequestParam(defaultValue = "") String text,
+            @RequestParam(defaultValue = "0") List<Integer> categories,
             @RequestParam(required = false) boolean paid,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "false") boolean onlyAvailable,
-            @RequestParam String sort,
+            @RequestParam(defaultValue = "ALL") String sort,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
         SortEnum sortEnum = SortEnum.findByValueOrThrowException(sort);
+
+//        String resultStart = java.net.URLDecoder.decode(rangeStart, StandardCharsets.UTF_8);
+//        LocalDateTime start = LocalDateTime.parse(resultStart, dateTimeFormatter);
+//
+//        String resultEnd = java.net.URLDecoder.decode(rangeEnd, StandardCharsets.UTF_8);
+//        LocalDateTime end = LocalDateTime.parse(resultEnd, dateTimeFormatter);
 
         List<Event> result = eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sortEnum, from, size, request.getRemoteAddr());

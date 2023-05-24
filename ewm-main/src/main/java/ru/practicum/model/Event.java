@@ -2,6 +2,7 @@ package ru.practicum.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 
@@ -48,6 +49,7 @@ public class Event {
     Boolean requestModeration;
     @Enumerated(EnumType.STRING)
     State state;
+//    State state = State.PENDING;
     String title;
     @Transient
     StateAction stateAction;

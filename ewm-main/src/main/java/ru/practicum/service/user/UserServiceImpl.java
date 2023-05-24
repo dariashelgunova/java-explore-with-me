@@ -18,13 +18,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
-    public List<User> findUsersAdmin(Integer[] ids, Integer from, Integer size) {
+    public List<User> findUsersAdmin(List<Integer> ids, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
-        List<Integer> listIds = Arrays.asList(ids);
-        if (ids.length == 0) {
+        if (ids.size() == 0) {
             return userRepository.findBy(pageable);
         } else {
-            return userRepository.findByIdIn(listIds, pageable);
+            return userRepository.findByIdIn(ids, pageable);
         }
     }
 

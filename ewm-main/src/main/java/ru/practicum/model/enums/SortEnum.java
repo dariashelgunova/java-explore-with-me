@@ -7,7 +7,8 @@ import java.util.Optional;
 
 public enum SortEnum {
     EVENT_DATE,
-    VIEWS;
+    VIEWS,
+    ALL;
 
     public static SortEnum findByValueOrThrowException(String value) {
         Optional<SortEnum> sort = Arrays.stream(values())
