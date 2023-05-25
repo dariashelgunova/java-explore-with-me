@@ -39,7 +39,7 @@ public class EventRequestServiceImpl implements EventRequestService {
         Event event = request.getEvent();
         event.setConfirmedRequests(event.getConfirmedRequests() - 1);
         eventService.saveEvent(event);
-        request.setStatus(Status.PENDING);
+        request.setStatus(Status.CANCELED);
         return eventRequestRepository.save(request);
     }
 
@@ -59,23 +59,29 @@ public class EventRequestServiceImpl implements EventRequestService {
 //            newRequest.setCreatedOn(LocalDateTime.now());
 //            return eventRequestRepository.save(newRequest);
         } else if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
-            event.setAvailable(false);
-            eventService.saveEvent(event);
-            throw new ConflictException("Достигнуто максимальное количество участников!");
-        }  else {
+//            event.setAvailable(false);
+//            eventService.saveEvent(event);
+//            throw new ConflictException("Достигнуто максимальное количество участников!");
+        }
             EventRequest newRequest = new EventRequest();
-            if (event.getRequestModeration()) {
+            if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
                 newRequest.setStatus(Status.PENDING);
             } else {
+                if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
+                    event.setAvailable(false);
+                    eventService.saveEvent(event);
+                    throw new ConflictException("Достигнуто максимальное количество участников!");
+                }
                 newRequest.setStatus(Status.CONFIRMED);
                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                eventService.saveEvent(event);
             }
             newRequest.setUser(user);
             newRequest.setEvent(event);
             newRequest.setCreatedOn(LocalDateTime.now());
             return eventRequestRepository.save(newRequest);
         }
-    }
+
 
     public EventRequest findEventRequestById(Integer requestId) {
         return getEventRequestByIdOrThrowException(requestId);
@@ -112,7 +118,7 @@ public class EventRequestServiceImpl implements EventRequestService {
         if (status == Status.REJECTED) {
             for (EventRequest request : requests) {
                 if (request.getStatus() == Status.CONFIRMED) {
-                    event.setConfirmedRequests(event.getConfirmedRequests() - 1);
+                    throw new ConflictException("Нельзя отменить уже подтвержденную заявку");
                 }
                 request.setStatus(Status.REJECTED);
                 eventRequestRepository.save(request);
@@ -124,10 +130,12 @@ public class EventRequestServiceImpl implements EventRequestService {
                 } else if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
                     request.setStatus(Status.REJECTED);
                     eventRequestRepository.save(request);
+                    throw new ConflictException("Достигнуто максимальное количество участников!");
                 } else {
                     request.setStatus(Status.CONFIRMED);
                     eventRequestRepository.save(request);
                     event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                    eventService.saveEvent(event);
                 }
             }
         }

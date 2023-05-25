@@ -41,7 +41,7 @@ create table events (
    initiator_id integer references users(id),
    location_id integer references locations(id) on delete cascade,
    paid boolean default false,
-   available boolean,
+   available boolean default true,
    participant_limit integer default 0,
    published_on timestamp,
    request_moderation boolean default true,

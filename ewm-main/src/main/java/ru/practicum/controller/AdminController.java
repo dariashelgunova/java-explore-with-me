@@ -77,9 +77,9 @@ public class AdminController {
 
     @GetMapping("/events")
     public List<EventFullDto> getAdminEvents(
-            @RequestParam(defaultValue = "0") List<Integer> users,
-            @RequestParam(defaultValue = "PENDING, PUBLISHED, CANCELED") List<State> states,
-            @RequestParam(defaultValue = "0") List<Integer> categories,
+            @RequestParam(required = false) List<Integer> users,
+            @RequestParam(required = false) List<State> states,
+            @RequestParam(required = false) List<Integer> categories,
             @RequestParam(defaultValue = "2020-01-01 00:00:01") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
             @RequestParam(defaultValue = "2050-01-01 00:00:01") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") Integer from,
@@ -98,7 +98,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public List<UserDto> getAdminUsers(
-            @RequestParam List<Integer> ids,
+            @RequestParam(required = false) List<Integer> ids,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size) {
         List<User> result = userService.findUsersAdmin(ids, from, size);
@@ -129,13 +129,14 @@ public class AdminController {
     }
 
     @DeleteMapping("/compilations/{compId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAdminCompilationById(@PathVariable("compId") Integer compId) {
         compilationService.deleteCompilationByIdAdmin(compId);
     }
 
     @PatchMapping("/compilations/{compId}")
     public CompilationDto updateCompilation(@PathVariable("compId") Integer compId,
-                                            @RequestBody UpdateCompilationRequest compilationDto) {
+                                            @Valid @RequestBody UpdateCompilationRequest compilationDto) {
         List<Event> events = eventService.findEventsByIds(compilationDto.getEvents());
         Compilation newCompilation = compilationMapper.fromDto(compilationDto, events);
         Compilation updatedCompilation = compilationService.updateCompilationAdmin(compId, newCompilation);

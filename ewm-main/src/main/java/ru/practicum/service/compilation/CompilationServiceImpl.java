@@ -52,11 +52,13 @@ public class CompilationServiceImpl implements CompilationService {
     private Compilation changeCompilationFields(Compilation oldCompilation, Compilation newCompilation) {
         if (newCompilation.getPinned() != null) {
             oldCompilation.setPinned(newCompilation.getPinned());
-        } else if(newCompilation.getTitle() != null) {
+        }
+        if (newCompilation.getTitle() != null) {
             oldCompilation.setTitle(newCompilation.getTitle());
-        } else if (newCompilation.getEvents() != null) {
+        }
+        if (newCompilation.getEvents() != null) {
             oldCompilation.setEvents(newCompilation.getEvents());
         }
-        return oldCompilation;
+        return compilationRepository.save(oldCompilation);
     }
 }

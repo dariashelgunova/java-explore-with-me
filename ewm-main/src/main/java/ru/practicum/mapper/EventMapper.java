@@ -16,9 +16,12 @@ public interface EventMapper {
     List<EventShortDto> toShortDtoList(List<Event> events);
     EventShortDto toShortDto(Event event);
     @Mapping(target = "category", source = "category")
+    @Mapping(target = "id", ignore = true)
     Event fromDto(NewEventDto dto, Category category);
     @Mapping(target = "category", source = "category")
+    @Mapping(target = "id", ignore = true)
     Event fromDto(UpdateEventUserRequest dto, Category category);
     @Mapping(target = "category", source = "category")
+    @Mapping(target = "id", ignore = true)
     Event fromDto(UpdateEventAdminRequest dto, Category category);
 }

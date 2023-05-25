@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     List<Category> findBy(Pageable pageable);
+    List<Category> findByName(String name);
 }

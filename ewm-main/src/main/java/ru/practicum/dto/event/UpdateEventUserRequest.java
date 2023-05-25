@@ -22,6 +22,7 @@ public class UpdateEventUserRequest {
     @Size(max = 7000)
     String description;
     @EventTimeLimit
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
     Location location;
     boolean paid;

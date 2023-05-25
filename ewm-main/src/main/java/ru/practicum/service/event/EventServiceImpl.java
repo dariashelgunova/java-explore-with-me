@@ -5,10 +5,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.client.HitClient;
 import ru.practicum.client.StatsClient;
 import ru.practicum.exception.BadRequestException;
@@ -20,14 +18,11 @@ import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 import ru.practicum.pageable.OffsetBasedPageRequest;
 import ru.practicum.repository.EventRepository;
-import ru.practicum.repository.LocationRepository;
-import ru.practicum.service.eventrequest.EventRequestService;
 import ru.practicum.service.user.UserService;
 import ru.practicum.view.EventView;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -74,21 +69,25 @@ public class EventServiceImpl implements EventService {
     public Event updateEventPrivate(Integer userId, Integer eventId, Event event) {
         userService.findUserById(userId);
         Event existingEvent = getEventByIdOrThrowException(eventId);
+        if (Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PUBLISHED)) {
+            throw new ConflictException("Редактируемое событие не может быть опубликованным!");
+        }
         if (event.getStateAction() == null) {
             return changeEventFields(existingEvent, event);
         }
-        if (Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PUBLISHED)) {
-            throw new ConflictException("Редактируемое событие не может быть опубликованным!");
-        } else {
+
+        if (event.getStateAction().equals(StateAction.PUBLISH_EVENT)) {
+            existingEvent.setState(State.PUBLISHED);
             changeEventFields(existingEvent, event);
-            if (event.getStateAction().equals(StateAction.PUBLISH_EVENT)) {
-                existingEvent.setState(State.PUBLISHED);
-            } else if (event.getStateAction().equals(StateAction.REJECT_EVENT)) {
-                existingEvent.setState(State.CANCELED);
-            } else if (event.getStateAction().equals(StateAction.SEND_TO_REVIEW)) {
-                existingEvent.setState(State.PENDING);
-            }
+        } else if (event.getStateAction().equals(StateAction.REJECT_EVENT)) {
+            existingEvent.setState(State.CANCELED);
+            changeEventFields(existingEvent, event);
+        } else if (event.getStateAction().equals(StateAction.SEND_TO_REVIEW)) {
+            existingEvent.setState(State.PENDING);
+        } else if (event.getStateAction().equals(StateAction.CANCEL_REVIEW)) {
+            existingEvent.setState(State.CANCELED);
         }
+
         return eventRepository.save(existingEvent);
     }
 
@@ -108,15 +107,15 @@ public class EventServiceImpl implements EventService {
         if (newEvent.getLocation() != null) {
             existingEvent.setLocation(newEvent.getLocation());
         }
-//        if (newEvent.getPaid() != null) {
-//            existingEvent.setPaid(newEvent.getPaid());
-//        }
-        if (newEvent.getParticipantLimit() != null) {
+        if (newEvent.getPaid() != null) {
+            existingEvent.setPaid(newEvent.getPaid());
+        }
+        if (newEvent.getParticipantLimit() != null && newEvent.getParticipantLimit() != 0) {
             existingEvent.setParticipantLimit(newEvent.getParticipantLimit());
         }
-        if (newEvent.getRequestModeration() != null) {
-            existingEvent.setRequestModeration(newEvent.getRequestModeration());
-        }
+//        if (newEvent.getRequestModeration() != null) {
+//            existingEvent.setRequestModeration(newEvent.getRequestModeration());
+//        }
         if (newEvent.getState() != null) {
             existingEvent.setState(newEvent.getState());
         }
@@ -138,8 +137,7 @@ public class EventServiceImpl implements EventService {
 //        for (EventView view : result) {
 //            events.add(setFields(view));
 //        }
-        return eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(users, states,
-                categories, rangeStart, rangeEnd, pageable);
+        return eventRepository.findAllAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
     }
 
     public Event saveEvent(Event event) {
@@ -182,7 +180,7 @@ public class EventServiceImpl implements EventService {
         }
         Sort sort;
         if (sortEnum == SortEnum.EVENT_DATE) {
-            sort = Sort.by(Sort.Direction.ASC, "event_date");
+            sort = Sort.by(Sort.Direction.ASC, "eventDate");
         } else {
             sort = null;
         }
@@ -190,22 +188,22 @@ public class EventServiceImpl implements EventService {
         List<EventView> subResult;
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, sort);
         LocalDateTime currentTime = LocalDateTime.now();
-
-        if (paid == null) {
-            if (rangeStart == null || rangeEnd == null) {
-                result = eventRepository.getEvents(text, text, categories, currentTime, onlyAvailable, pageable);
-            } else {
-                result = eventRepository.getEvents(text, text, categories, rangeStart, rangeEnd, onlyAvailable, pageable);
-            }
-        } else {
-            if (rangeStart == null || rangeEnd == null) {
-                result = eventRepository.getEvents(text, text, categories, paid, currentTime, onlyAvailable, pageable);
-            } else {
-                result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable);
-            }
+        if (!Objects.equals(text, "")) {
+            text = text.toLowerCase();
         }
+        Boolean available = null;
+        if (onlyAvailable) {
+            available = true;
+        }
+
+            if (rangeStart == null || rangeEnd == null) {
+                result = eventRepository.getEvents(text, text, categories, paid, currentTime, available, pageable);
+            } else {
+                result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, available, pageable);
+            }
+
         for (Event event : result) {
-            result.add(setStatsByEvent(event));
+            setStatsByEvent(event);
         }
         sendStats("/events", ip);
         if (sortEnum == SortEnum.VIEWS) {
@@ -251,7 +249,7 @@ public class EventServiceImpl implements EventService {
     }
 
     public List<Event> findEventsByIds(List<Integer> ids) {
-        return eventRepository.findByIdIn(ids);
+        return eventRepository.findByIds(ids);
     }
 //    private Event setFields(EventView eventView) {
 //        return new Event(eventView.getId(), eventView.getAnnotation(), eventView.getCategory(), eventView.getConfirmedRequests(),
