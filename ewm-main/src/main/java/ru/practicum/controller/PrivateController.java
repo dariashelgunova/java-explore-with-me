@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.dto.event.*;
 import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventShortDto;
+import ru.practicum.dto.event.NewEventDto;
+import ru.practicum.dto.event.UpdateEventUserRequest;
 import ru.practicum.dto.eventrequest.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.eventrequest.EventRequestStatusUpdateResult;
 import ru.practicum.dto.eventrequest.participation.ParticipationRequestDto;
@@ -89,7 +91,7 @@ public class PrivateController {
     @PostMapping("/{userId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto createEventRequest(@PathVariable("userId") Integer userId,
-                                                     @RequestParam("eventId") Integer eventId) {
+                                                      @RequestParam("eventId") Integer eventId) {
         EventRequest result = eventRequestService.createEventRequestPrivate(userId, eventId);
         return eventRequestMapper.toParticipationDto(result);
     }

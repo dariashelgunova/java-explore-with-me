@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Event;
@@ -63,24 +62,24 @@ public class EventRequestServiceImpl implements EventRequestService {
 //            eventService.saveEvent(event);
 //            throw new ConflictException("Достигнуто максимальное количество участников!");
         }
-            EventRequest newRequest = new EventRequest();
-            if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
-                newRequest.setStatus(Status.PENDING);
-            } else {
-                if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
-                    event.setAvailable(false);
-                    eventService.saveEvent(event);
-                    throw new ConflictException("Достигнуто максимальное количество участников!");
-                }
-                newRequest.setStatus(Status.CONFIRMED);
-                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+        EventRequest newRequest = new EventRequest();
+        if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
+            newRequest.setStatus(Status.PENDING);
+        } else {
+            if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
+                event.setAvailable(false);
                 eventService.saveEvent(event);
+                throw new ConflictException("Достигнуто максимальное количество участников!");
             }
-            newRequest.setUser(user);
-            newRequest.setEvent(event);
-            newRequest.setCreatedOn(LocalDateTime.now());
-            return eventRequestRepository.save(newRequest);
+            newRequest.setStatus(Status.CONFIRMED);
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventService.saveEvent(event);
         }
+        newRequest.setUser(user);
+        newRequest.setEvent(event);
+        newRequest.setCreatedOn(LocalDateTime.now());
+        return eventRequestRepository.save(newRequest);
+    }
 
 
     public EventRequest findEventRequestById(Integer requestId) {

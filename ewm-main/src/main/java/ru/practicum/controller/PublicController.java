@@ -24,9 +24,7 @@ import ru.practicum.service.compilation.CompilationService;
 import ru.practicum.service.event.EventService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -46,7 +44,7 @@ public class PublicController {
     public List<CompilationDto> getEventCompilations(@RequestParam(required = false) Boolean pinned,
                                                      @RequestParam(defaultValue = "0") Integer from,
                                                      @RequestParam(defaultValue = "10") Integer size) {
-        List<Compilation> result = compilationService.getEventCompilationsPublic(pinned,from, size);
+        List<Compilation> result = compilationService.getEventCompilationsPublic(pinned, from, size);
         return compilationMapper.toDtoList(result);
     }
 

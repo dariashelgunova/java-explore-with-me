@@ -12,10 +12,15 @@ import java.util.List;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
     User fromDto(NewUserRequest dto);
+
     User fromDto(UserDto dto);
+
     UserDto toDto(User user);
+
     List<UserDto> toDtoList(List<User> users);
+
     UserShortDto toShortDto(User user);
+
     List<UserShortDto> toDtoShortList(List<User> users);
 
 }

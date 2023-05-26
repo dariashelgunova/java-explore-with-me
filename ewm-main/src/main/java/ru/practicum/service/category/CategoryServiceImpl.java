@@ -23,7 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     public Category createCategoryAdmin(Category category) {
         checkIfNameIsUnique(category);
-        return  categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
     public void deleteCategoryByIdAdmin(Integer catId) {

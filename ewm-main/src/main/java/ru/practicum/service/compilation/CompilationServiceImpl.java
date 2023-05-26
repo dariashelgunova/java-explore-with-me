@@ -11,13 +11,12 @@ import ru.practicum.repository.CompilationRepository;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toMap;
-
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CompilationServiceImpl implements CompilationService {
     CompilationRepository compilationRepository;
+
     public List<Compilation> getEventCompilationsPublic(Boolean pinned, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
         if (pinned == null) {
@@ -26,7 +25,8 @@ public class CompilationServiceImpl implements CompilationService {
             return compilationRepository.findByPinned(pinned, pageable);
         }
     }
-    public Compilation getEventCompilationByIdPublic(Integer compId){
+
+    public Compilation getEventCompilationByIdPublic(Integer compId) {
         return getEventCompilationByIdOrThrowException(compId);
     }
 

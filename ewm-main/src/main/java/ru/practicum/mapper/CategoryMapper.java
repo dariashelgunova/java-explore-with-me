@@ -11,7 +11,10 @@ import java.util.List;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryMapper {
     Category fromDto(NewCategoryDto dto);
+
     Category fromDto(CategoryDto dto);
+
     CategoryDto toDto(Category category);
+
     List<CategoryDto> toDtoList(List<Category> categories);
 }

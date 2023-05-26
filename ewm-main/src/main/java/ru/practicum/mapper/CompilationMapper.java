@@ -3,7 +3,6 @@ package ru.practicum.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
@@ -16,8 +15,11 @@ import java.util.List;
 public interface CompilationMapper {
     @Mapping(target = "events", source = "events")
     Compilation fromDto(UpdateCompilationRequest dto, List<Event> events);
+
     @Mapping(target = "events", source = "events")
     Compilation fromDto(NewCompilationDto dto, List<Event> events);
+
     CompilationDto toDto(Compilation compilation);
+
     List<CompilationDto> toDtoList(List<Compilation> compilations);
 }

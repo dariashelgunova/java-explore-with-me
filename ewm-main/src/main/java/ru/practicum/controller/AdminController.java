@@ -13,8 +13,8 @@ import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
-import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.NewUserRequest;
+import ru.practicum.dto.user.UserDto;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.mapper.CompilationMapper;
 import ru.practicum.mapper.EventMapper;
@@ -30,10 +30,7 @@ import ru.practicum.service.event.EventService;
 import ru.practicum.service.user.UserService;
 
 import javax.validation.Valid;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 
 @RestController

@@ -2,7 +2,6 @@ package ru.practicum.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.ColumnDefault;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 

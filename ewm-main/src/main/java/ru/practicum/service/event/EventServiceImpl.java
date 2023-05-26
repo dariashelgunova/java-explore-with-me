@@ -41,6 +41,7 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException("В данной категории есть события!");
         }
     }
+
     public Event findEventByIdPrivate(Integer userId, Integer eventId) {
         userService.findUserById(userId);
         return getEventByIdOrThrowException(eventId);
@@ -199,11 +200,11 @@ public class EventServiceImpl implements EventService {
             available = true;
         }
 
-            if (rangeStart == null || rangeEnd == null) {
-                result = eventRepository.getEvents(text, text, categories, paid, currentTime, available, pageable);
-            } else {
-                result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, available, pageable);
-            }
+        if (rangeStart == null || rangeEnd == null) {
+            result = eventRepository.getEvents(text, text, categories, paid, currentTime, available, pageable);
+        } else {
+            result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, available, pageable);
+        }
 
         for (Event event : result) {
             setStatsByEvent(event);
@@ -221,7 +222,7 @@ public class EventServiceImpl implements EventService {
         LocalDateTime start = LocalDateTime.now().minusYears(5);
         LocalDateTime end = LocalDateTime.now().plusYears(5);
         ResponseEntity<Object> result = statsClient.getStats(start.format(dateTimeFormatter), end.format(dateTimeFormatter), uris, true);
-        Object statsObject =  result.getBody();
+        Object statsObject = result.getBody();
         if (statsObject != null) {
             List<ViewStats> stats = Arrays.asList(new ObjectMapper().convertValue(statsObject, ViewStats[].class));
             if (!stats.isEmpty()) {
