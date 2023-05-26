@@ -38,11 +38,11 @@ public class ControllerExceptionHandler {
         return buildErrorResponse(BAD_REQUEST, ex);
     }
 
-    @ExceptionHandler(value = Throwable.class)
-    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
-        log.debug(String.valueOf(ex));
-        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
+//        log.debug(String.valueOf(ex));
+//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
+//    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
