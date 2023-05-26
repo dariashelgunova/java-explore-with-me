@@ -38,7 +38,6 @@ public class PublicController {
     CategoryMapper categoryMapper;
     EventService eventService;
     EventMapper eventMapper;
-//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @GetMapping("/compilations")
     public List<CompilationDto> getEventCompilations(@RequestParam(required = false) Boolean pinned,
@@ -80,12 +79,6 @@ public class PublicController {
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
         SortEnum sortEnum = SortEnum.findByValueOrThrowException(sort);
-
-//        String resultStart = java.net.URLDecoder.decode(rangeStart, StandardCharsets.UTF_8);
-//        LocalDateTime start = LocalDateTime.parse(resultStart, dateTimeFormatter);
-//
-//        String resultEnd = java.net.URLDecoder.decode(rangeEnd, StandardCharsets.UTF_8);
-//        LocalDateTime end = LocalDateTime.parse(resultEnd, dateTimeFormatter);
 
         List<Event> result = eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sortEnum, from, size, request.getRemoteAddr());

@@ -5,5 +5,4 @@ public class InvalidEventSortException extends RuntimeException {
         super(message);
     }
 }
-// 400 NumberFormatException
-// 400 Event must be published
+

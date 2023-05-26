@@ -135,12 +135,6 @@ public class EventServiceImpl implements EventService {
     public List<Event> getEventsAdmin(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart,
                                       LocalDateTime rangeEnd, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
-//        List<EventView> result = eventRepository.getEventsAdmin(users, states,
-//                categories, rangeStart, rangeEnd, pageable);
-//        List<Event> events = new ArrayList<>();
-//        for (EventView view : result) {
-//            events.add(setFields(view));
-//        }
         return eventRepository.findAllAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
     }
 
@@ -255,12 +249,5 @@ public class EventServiceImpl implements EventService {
     public List<Event> findEventsByIds(List<Integer> ids) {
         return eventRepository.findByIds(ids);
     }
-//    private Event setFields(EventView eventView) {
-//        return new Event(eventView.getId(), eventView.getAnnotation(), eventView.getCategory(), eventView.getConfirmedRequests(),
-//                eventView.getAvailable(), eventView.getCreatedOn(), eventView.getDescription(), eventView.getEventDate(),
-//                eventView.getInitiator(), eventView.getLocation(), eventView.getPaid(), eventView.getParticipantLimit(),
-//                eventView.getPublishedOn(), eventView.getRequestModeration(), eventView.getState(), eventView.getTitle(),
-//                null, 0, null);
-//    }
 
 }

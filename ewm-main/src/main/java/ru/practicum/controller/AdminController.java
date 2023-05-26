@@ -47,7 +47,6 @@ public class AdminController {
     UserMapper userMapper;
     EventService eventService;
     EventMapper eventMapper;
-//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     @PostMapping("/categories")

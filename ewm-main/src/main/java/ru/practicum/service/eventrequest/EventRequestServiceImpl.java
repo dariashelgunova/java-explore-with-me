@@ -50,17 +50,6 @@ public class EventRequestServiceImpl implements EventRequestService {
             throw new ConflictException("Инициатор события не может отправить заявку на участие в нем!");
         } else if (event.getState() != State.PUBLISHED) {
             throw new ConflictException("Нельзя отправить заявку на участие в еще не опубликованном событии!");
-//        } else if (event.getParticipantLimit() == 0) {
-//            EventRequest newRequest = new EventRequest();
-//            newRequest.setStatus(Status.PENDING);
-//            newRequest.setUser(user);
-//            newRequest.setEvent(event);
-//            newRequest.setCreatedOn(LocalDateTime.now());
-//            return eventRequestRepository.save(newRequest);
-        } else if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
-//            event.setAvailable(false);
-//            eventService.saveEvent(event);
-//            throw new ConflictException("Достигнуто максимальное количество участников!");
         }
         EventRequest newRequest = new EventRequest();
         if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
@@ -96,15 +85,6 @@ public class EventRequestServiceImpl implements EventRequestService {
             throw new ConflictException("Данный пользователь уже отправлял запрос на участие в мероприятии!");
         }
     }
-
-//    private Integer findParticipantsAmountConfirmedByEventId(Integer eventId) {
-//        Integer result = eventRequestRepository.findParticipantsAmount(eventId);
-//        if (result == null) {
-//            return 0;
-//        } else {
-//            return result;
-//        }
-//    }
 
     public List<EventRequest> findByUserIdAndEventIdPrivate(Integer userId, Integer eventId) {
         return eventRequestRepository.findByEventId(eventId);

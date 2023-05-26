@@ -66,7 +66,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private void checkIfNameIsUnique(Category category) {
         List<Category> result = categoryRepository.findByName(category.getName());
-        if (!result.isEmpty() && (category.getId() == null | !Objects.equals(result.get(0).getId(), category.getId()))) {
+        if (!result.isEmpty() /*&& (category.getId() == null | !Objects.equals(result.get(0).getId(), category.getId()))*/) {
             throw new ConflictException("Имя категории не может повторяться");
         }
     }
