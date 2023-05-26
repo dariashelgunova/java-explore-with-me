@@ -32,9 +32,9 @@ public class NewEventDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
     Location location;
-    boolean paid;
-    int participantLimit;
-    boolean requestModeration;
+    Boolean paid;
+    Integer participantLimit;
+    Boolean requestModeration;
     @Size(min = 3)
     @Size(max = 120)
     @NotBlank

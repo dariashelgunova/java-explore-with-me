@@ -25,9 +25,9 @@ public class UpdateEventAdminRequest {
     @Future
     LocalDateTime eventDate;
     Location location;
-    boolean paid;
-    int participantLimit;
-    boolean requestModeration;
+    Boolean paid;
+    Integer participantLimit;
+    Boolean requestModeration;
     StateAction stateAction;
     @Size(min = 3)
     @Size(max = 120)

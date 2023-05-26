@@ -62,6 +62,9 @@ public class EventServiceImpl implements EventService {
 
     public Event createEventPrivate(Integer userId, Event event) {
         User user = userService.findUserById(userId);
+        if (event.getRequestModeration() == null) {
+            event.setRequestModeration(true);
+        }
         event.setInitiator(user);
         return eventRepository.save(event);
     }
