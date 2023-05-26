@@ -19,7 +19,6 @@ import ru.practicum.model.enums.StateAction;
 import ru.practicum.pageable.OffsetBasedPageRequest;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.service.user.UserService;
-import ru.practicum.view.EventView;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -79,7 +78,6 @@ public class EventServiceImpl implements EventService {
         if (event.getStateAction() == null) {
             return changeEventFields(existingEvent, event);
         }
-
         if (event.getStateAction().equals(StateAction.PUBLISH_EVENT)) {
             existingEvent.setState(State.PUBLISHED);
             changeEventFields(existingEvent, event);
@@ -91,7 +89,6 @@ public class EventServiceImpl implements EventService {
         } else if (event.getStateAction().equals(StateAction.CANCEL_REVIEW)) {
             existingEvent.setState(State.CANCELED);
         }
-
         return eventRepository.save(existingEvent);
     }
 
@@ -117,9 +114,6 @@ public class EventServiceImpl implements EventService {
         if (newEvent.getParticipantLimit() != null && newEvent.getParticipantLimit() != 0) {
             existingEvent.setParticipantLimit(newEvent.getParticipantLimit());
         }
-//        if (newEvent.getRequestModeration() != null) {
-//            existingEvent.setRequestModeration(newEvent.getRequestModeration());
-//        }
         if (newEvent.getState() != null) {
             existingEvent.setState(newEvent.getState());
         }
@@ -151,11 +145,14 @@ public class EventServiceImpl implements EventService {
         if (event.getStateAction() == null) {
             return changeEventFields(existingEvent, event);
         }
-        if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) && currentTime.plusHours(1).isAfter(existingEvent.getEventDate())) {
+        if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) &&
+                currentTime.plusHours(1).isAfter(existingEvent.getEventDate())) {
             throw new ConflictException("Редактировать событие нужно как минимум за час до публикации!");
-        } else if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) && (!Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PENDING))) {
+        } else if (event.getStateAction().equals(StateAction.PUBLISH_EVENT) &&
+                (!Optional.ofNullable(existingEvent.getState()).orElse(State.PENDING).equals(State.PENDING))) {
             throw new ConflictException("Опубликовать событие можно, только если оно в состоянии ожидания публикации!");
-        } else if (event.getStateAction().equals(StateAction.REJECT_EVENT) && (existingEvent.getState().equals(State.PUBLISHED))) {
+        } else if (event.getStateAction().equals(StateAction.REJECT_EVENT) &&
+                (existingEvent.getState().equals(State.PUBLISHED))) {
             throw new ConflictException("Отклонить можно только еще неопубликованное событие!");
         } else {
             if (event.getStateAction().equals(StateAction.PUBLISH_EVENT)) {
@@ -182,8 +179,7 @@ public class EventServiceImpl implements EventService {
         } else {
             sort = null;
         }
-        List<Event> result = new ArrayList<>();
-        List<EventView> subResult;
+        List<Event> result;
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, sort);
         LocalDateTime currentTime = LocalDateTime.now();
         if (!Objects.equals(text, "")) {
@@ -193,13 +189,11 @@ public class EventServiceImpl implements EventService {
         if (onlyAvailable) {
             available = true;
         }
-
         if (rangeStart == null || rangeEnd == null) {
             result = eventRepository.getEvents(text, text, categories, paid, currentTime, available, pageable);
         } else {
             result = eventRepository.getEvents(text, text, categories, paid, rangeStart, rangeEnd, available, pageable);
         }
-
         for (Event event : result) {
             setStatsByEvent(event);
         }
