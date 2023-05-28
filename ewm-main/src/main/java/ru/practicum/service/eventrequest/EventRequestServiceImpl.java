@@ -35,9 +35,6 @@ public class EventRequestServiceImpl implements EventRequestService {
     public EventRequest cancelEventRequestPrivate(Integer userId, Integer requestId) {
         userRepository.getUserByIdOrThrowException(userId);
         EventRequest request = findEventRequestById(requestId);
-//        Event event = request.getEvent();
-//        event.setConfirmedRequests(event.getConfirmedRequests() - 1);
-//        eventRepository.save(event);
         request.setStatus(Status.CANCELED);
         return eventRequestRepository.save(request);
     }
@@ -61,8 +58,6 @@ public class EventRequestServiceImpl implements EventRequestService {
                 throw new ConflictException("Достигнуто максимальное количество участников!");
             }
             newRequest.setStatus(Status.CONFIRMED);
-//            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-//            eventRepository.save(event);
         }
         newRequest.setUser(user);
         newRequest.setEvent(event);
@@ -112,8 +107,6 @@ public class EventRequestServiceImpl implements EventRequestService {
                 } else {
                     request.setStatus(Status.CONFIRMED);
                     eventRequestRepository.save(request);
-//                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-//                    eventRepository.save(event);
                 }
             }
         }

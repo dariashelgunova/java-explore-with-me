@@ -38,12 +38,10 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private Category changeCategoryFields(Category oldCategory, Category newCategory) {
-//        if (newCategory.getName() != null) {
         if (!Objects.equals(oldCategory.getName(), newCategory.getName())) {
             checkIfNameIsUnique(newCategory);
         }
         oldCategory.setName(newCategory.getName());
-//        }
         return categoryRepository.save(oldCategory);
     }
 
