@@ -3,6 +3,7 @@ package ru.practicum.dto.eventrequest.participation;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.model.enums.Status;
 
 import java.time.LocalDateTime;
 
@@ -13,5 +14,5 @@ public class ParticipationRequestDto {
     int event;
     int id;
     int requester;
-    String status;
+    Status status;
 }

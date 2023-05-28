@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
-    void checkIfThereAreNoEventsInCategory(Category category);
 
     Event findEventById(Integer eventId);
 

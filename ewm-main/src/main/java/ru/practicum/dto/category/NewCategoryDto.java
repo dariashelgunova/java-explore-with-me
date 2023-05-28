@@ -11,7 +11,6 @@ import javax.validation.constraints.Size;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewCategoryDto {
-    @NotNull
     @NotBlank
     @Size(max = 50)
     String name;

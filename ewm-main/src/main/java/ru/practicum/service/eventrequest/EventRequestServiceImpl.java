@@ -11,9 +11,9 @@ import ru.practicum.model.EventRequest;
 import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.Status;
+import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventRequestRepository;
-import ru.practicum.service.event.EventService;
-import ru.practicum.service.user.UserService;
+import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,27 +24,27 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EventRequestServiceImpl implements EventRequestService {
     EventRequestRepository eventRequestRepository;
-    UserService userService;
-    EventService eventService;
+    UserRepository userRepository;
+    EventRepository eventRepository;
 
     public List<EventRequest> findByUserIdPrivate(Integer userId) {
-        userService.findUserById(userId);
+        userRepository.getUserByIdOrThrowException(userId);
         return eventRequestRepository.findByUserId(userId);
     }
 
     public EventRequest cancelEventRequestPrivate(Integer userId, Integer requestId) {
-        userService.findUserById(userId);
+        userRepository.getUserByIdOrThrowException(userId);
         EventRequest request = findEventRequestById(requestId);
-        Event event = request.getEvent();
-        event.setConfirmedRequests(event.getConfirmedRequests() - 1);
-        eventService.saveEvent(event);
+//        Event event = request.getEvent();
+//        event.setConfirmedRequests(event.getConfirmedRequests() - 1);
+//        eventRepository.save(event);
         request.setStatus(Status.CANCELED);
         return eventRequestRepository.save(request);
     }
 
     public EventRequest createEventRequestPrivate(Integer userId, Integer eventId) {
-        User user = userService.findUserById(userId);
-        Event event = eventService.findEventById(eventId);
+        User user = userRepository.getUserByIdOrThrowException(userId);
+        Event event = eventRepository.getEventByIdOrThrowException(eventId);
         checkIfUserHasRequest(userId, eventId);
         if (Objects.equals(event.getInitiator().getId(), userId)) {
             throw new ConflictException("Инициатор события не может отправить заявку на участие в нем!");
@@ -55,21 +55,20 @@ public class EventRequestServiceImpl implements EventRequestService {
         if (event.getRequestModeration() && event.getParticipantLimit() != 0) {
             newRequest.setStatus(Status.PENDING);
         } else {
-            if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
+            if (event.getParticipantLimit() != 0 && Objects.equals(findParticipantsAmountConfirmedByEventId(eventId), event.getParticipantLimit())) {
                 event.setAvailable(false);
-                eventService.saveEvent(event);
+                eventRepository.save(event);
                 throw new ConflictException("Достигнуто максимальное количество участников!");
             }
             newRequest.setStatus(Status.CONFIRMED);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            eventService.saveEvent(event);
+//            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+//            eventRepository.save(event);
         }
         newRequest.setUser(user);
         newRequest.setEvent(event);
         newRequest.setCreatedOn(LocalDateTime.now());
         return eventRequestRepository.save(newRequest);
     }
-
 
     public EventRequest findEventRequestById(Integer requestId) {
         return getEventRequestByIdOrThrowException(requestId);
@@ -91,8 +90,8 @@ public class EventRequestServiceImpl implements EventRequestService {
     }
 
     public List<EventRequest> changeEventRequestStatusPrivate(Integer userId, Integer eventId, List<Integer> requestIds, Status status) {
-        userService.findUserById(userId);
-        Event event = eventService.findEventById(eventId);
+        userRepository.getUserByIdOrThrowException(userId);
+        Event event = eventRepository.getEventByIdOrThrowException(eventId);
         List<EventRequest> requests = findEventRequestsByRequestsIdsIn(requestIds);
         if (status == Status.REJECTED) {
             for (EventRequest request : requests) {
@@ -106,15 +105,15 @@ public class EventRequestServiceImpl implements EventRequestService {
             for (EventRequest request : requests) {
                 if (request.getStatus() == Status.REJECTED) {
                     throw new ConflictException("Статус заявки уже был изменен!");
-                } else if (event.getParticipantLimit() != 0 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
+                } else if (event.getParticipantLimit() != 0 && Objects.equals(findParticipantsAmountConfirmedByEventId(eventId), event.getParticipantLimit())) {
                     request.setStatus(Status.REJECTED);
                     eventRequestRepository.save(request);
                     throw new ConflictException("Достигнуто максимальное количество участников!");
                 } else {
                     request.setStatus(Status.CONFIRMED);
                     eventRequestRepository.save(request);
-                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-                    eventService.saveEvent(event);
+//                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+//                    eventRepository.save(event);
                 }
             }
         }
@@ -123,5 +122,9 @@ public class EventRequestServiceImpl implements EventRequestService {
 
     private List<EventRequest> findEventRequestsByRequestsIdsIn(List<Integer> requestIds) {
         return eventRequestRepository.findByIdIn(requestIds);
+    }
+
+    private Integer findParticipantsAmountConfirmedByEventId(Integer eventId) {
+        return eventRequestRepository.findParticipantsAmount(eventId);
     }
 }

@@ -4,11 +4,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.practicum.exception.ConflictException;
+import ru.practicum.exception.NotFoundObjectException;
+import ru.practicum.model.Category;
 import ru.practicum.model.Event;
+import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Integer> {
     List<Event> findByCategoryId(Integer categoryId);
@@ -61,11 +66,24 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
             "from events as e " +
             "where e.id = ?1 " +
             "and e.state = 'PUBLISHED' " +
-            "group by e.id ", nativeQuery = true)
-    List<Event> getPublicEventById(Integer eventId);
+            "group by e.id " +
+            "limit 1" , nativeQuery = true)
+    Optional<Event> getPublicEventById(Integer eventId);
 
     @Query(value = "select e " +
             "from Event e " +
             "where ((:ids) is null or e.id in (:ids)) ")
     List<Event> findByIds(@Param("ids") List<Integer> ids);
+
+    default void checkIfThereAreNoEventsInCategory(Category category) {
+        List<Event> eventsByCategory = findByCategoryId(category.getId());
+        if (!eventsByCategory.isEmpty()) {
+            throw new ConflictException("В данной категории есть события!");
+        }
+    }
+
+    default Event getEventByIdOrThrowException(Integer userId) {
+        return findById(userId)
+                .orElseThrow(() -> new NotFoundObjectException("Объект не был найден"));
+    }
 }

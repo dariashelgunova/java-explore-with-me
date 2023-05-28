@@ -4,6 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import ru.practicum.dto.event.*;
+import ru.practicum.dto.event.update.UpdateEventAdminRequest;
+import ru.practicum.dto.event.update.UpdateEventUserRequest;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 

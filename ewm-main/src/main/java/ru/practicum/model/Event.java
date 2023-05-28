@@ -26,6 +26,7 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "category_id")
     Category category;
+    @Transient
     int confirmedRequests;
     Boolean available;
     @Column(name = "created_on")

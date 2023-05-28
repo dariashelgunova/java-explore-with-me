@@ -9,6 +9,7 @@ import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Category;
 import ru.practicum.pageable.OffsetBasedPageRequest;
 import ru.practicum.repository.CategoryRepository;
+import ru.practicum.repository.EventRepository;
 import ru.practicum.service.event.EventService;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CategoryServiceImpl implements CategoryService {
     CategoryRepository categoryRepository;
-    EventService eventService;
+    EventRepository eventRepository;
 
     public Category createCategoryAdmin(Category category) {
         checkIfNameIsUnique(category);
@@ -28,7 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     public void deleteCategoryByIdAdmin(Integer catId) {
         Category category = getCategoryByIdOrThrowException(catId);
-        eventService.checkIfThereAreNoEventsInCategory(category);
+        eventRepository.checkIfThereAreNoEventsInCategory(category);
         categoryRepository.deleteById(catId);
     }
 
@@ -38,12 +39,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private Category changeCategoryFields(Category oldCategory, Category newCategory) {
-        if (newCategory.getName() != null) {
+//        if (newCategory.getName() != null) {
             if (!Objects.equals(oldCategory.getName(), newCategory.getName())) {
                 checkIfNameIsUnique(newCategory);
             }
             oldCategory.setName(newCategory.getName());
-        }
+//        }
         return categoryRepository.save(oldCategory);
     }
 

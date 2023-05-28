@@ -3,6 +3,7 @@ package ru.practicum.service.compilation;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Compilation;
@@ -53,7 +54,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (newCompilation.getPinned() != null) {
             oldCompilation.setPinned(newCompilation.getPinned());
         }
-        if (newCompilation.getTitle() != null) {
+        if (StringUtils.isNotBlank(newCompilation.getTitle())) {
             oldCompilation.setTitle(newCompilation.getTitle());
         }
         if (newCompilation.getEvents() != null) {

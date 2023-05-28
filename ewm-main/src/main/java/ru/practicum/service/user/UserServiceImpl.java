@@ -42,8 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getUserByIdOrThrowException(Integer userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundObjectException("Объект не был найден"));
+        return userRepository.getUserByIdOrThrowException(userId);
     }
 
     private void checkIfNameIsUnique(User user) {

@@ -11,6 +11,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @RestControllerAdvice
@@ -28,12 +29,11 @@ public class ControllerExceptionHandler {
         return buildErrorResponse(BAD_REQUEST, ex.getMessage());
     }
 
-
-//    @ExceptionHandler(value = Throwable.class)
-//    public ResponseEntity<ErrorDetails> handleUncheckedException(Throwable ex) {
-//        log.debug(String.valueOf(ex));
-//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage());
-//    }
+    @ExceptionHandler(value = Throwable.class)
+    public ResponseEntity<ErrorDetails> handleUncheckedException(Throwable ex) {
+        log.debug(String.valueOf(ex));
+        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDetails> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
