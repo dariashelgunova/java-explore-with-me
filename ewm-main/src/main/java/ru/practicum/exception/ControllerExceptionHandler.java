@@ -62,6 +62,7 @@ public class ControllerExceptionHandler {
         log.debug(String.valueOf(ex));
         return buildErrorResponse(CONFLICT, ex);
     }
+
     @ExceptionHandler(value = MissingServletRequestParameterException.class)
     public ResponseEntity<ApiError> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
         log.debug(String.valueOf(ex));

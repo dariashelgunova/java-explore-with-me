@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundObjectException;
-import ru.practicum.model.*;
+import ru.practicum.model.Event;
+import ru.practicum.model.User;
 import ru.practicum.model.enums.SortEnum;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
@@ -20,7 +21,10 @@ import ru.practicum.repository.UserRepository;
 import ru.practicum.service.statsservice.StatsService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -201,9 +205,9 @@ public class EventServiceImpl implements EventService {
     public Event getEventByIdPublic(Integer eventId, String ip) {
         Event result = eventRepository.getPublicEventById(eventId)
                 .orElseThrow(() -> new NotFoundObjectException("Данное событие не найдено или еще не опубликовано!"));
-            statsService.sendStats("/events/" + result.getId(), ip);
-            Event event = statsService.setStatsByEvent(result);
-            return setConfirmedRequestsToEvent(event);
+        statsService.sendStats("/events/" + result.getId(), ip);
+        Event event = statsService.setStatsByEvent(result);
+        return setConfirmedRequestsToEvent(event);
     }
 
     public List<Event> findEventsByIds(List<Integer> ids) {

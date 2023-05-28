@@ -8,5 +8,6 @@ import ru.practicum.model.Location;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LocationMapper {
     Location fromDto(LocationDto dto);
+
     LocationDto toDto(Location location);
 }

@@ -1,6 +1,5 @@
 package ru.practicum.service.statsservice;
 
-import org.springframework.beans.factory.annotation.Value;
 import ru.practicum.model.Event;
 
 import java.util.List;

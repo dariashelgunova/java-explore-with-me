@@ -8,7 +8,6 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
-import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 
 import java.time.LocalDateTime;
@@ -67,7 +66,7 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
             "where e.id = ?1 " +
             "and e.state = 'PUBLISHED' " +
             "group by e.id " +
-            "limit 1" , nativeQuery = true)
+            "limit 1", nativeQuery = true)
     Optional<Event> getPublicEventById(Integer eventId);
 
     @Query(value = "select e " +

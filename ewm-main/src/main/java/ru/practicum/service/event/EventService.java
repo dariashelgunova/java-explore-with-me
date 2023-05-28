@@ -1,6 +1,5 @@
 package ru.practicum.service.event;
 
-import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.enums.SortEnum;
 import ru.practicum.model.enums.State;

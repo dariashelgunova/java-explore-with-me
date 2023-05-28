@@ -2,7 +2,6 @@ package ru.practicum.service.statsservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,7 @@ public class StatsServiceImpl implements StatsService {
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String appName;
 
-    public StatsServiceImpl(StatsClient statsClient, HitClient hitClient, @Value("${app.service.name}")String appName) {
+    public StatsServiceImpl(StatsClient statsClient, HitClient hitClient, @Value("${app.service.name}") String appName) {
         this.statsClient = statsClient;
         this.hitClient = hitClient;
         this.appName = appName;
@@ -56,6 +55,7 @@ public class StatsServiceImpl implements StatsService {
         }
         return event;
     }
+
     public List<Event> setViewsByEvents(List<Event> events) {
         Map<Integer, Integer> viewsById = getViewsByIds(events);
         if (!events.isEmpty() && !viewsById.isEmpty()) {
@@ -69,7 +69,7 @@ public class StatsServiceImpl implements StatsService {
                 .map(Event::getId).collect(Collectors.toList());
         Map<Integer, Integer> resultMap = new HashMap<>();
         String[] uris = new String[ids.size()];
-        for (int i = 0; i < ids.size(); i ++) {
+        for (int i = 0; i < ids.size(); i++) {
             uris[i] = "/events/" + ids.get(i);
         }
         LocalDateTime start = findEarliestEventDate(events);

@@ -38,6 +38,7 @@ public class EventControllerPrivate {
     EventService eventService;
     EventMapper eventMapper;
     CategoryService categoryService;
+
     @GetMapping
     public List<EventShortDto> getEvents(@PathVariable("userId") Integer userId,
                                          @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,

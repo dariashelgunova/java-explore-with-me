@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEventAdminRequest extends UpdateEventRequest {
     StateAction stateAction;
+
     public enum StateAction {
         PUBLISH_EVENT,
         REJECT_EVENT

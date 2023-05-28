@@ -10,7 +10,6 @@ import ru.practicum.model.Category;
 import ru.practicum.pageable.OffsetBasedPageRequest;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
-import ru.practicum.service.event.EventService;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,10 +39,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category changeCategoryFields(Category oldCategory, Category newCategory) {
 //        if (newCategory.getName() != null) {
-            if (!Objects.equals(oldCategory.getName(), newCategory.getName())) {
-                checkIfNameIsUnique(newCategory);
-            }
-            oldCategory.setName(newCategory.getName());
+        if (!Objects.equals(oldCategory.getName(), newCategory.getName())) {
+            checkIfNameIsUnique(newCategory);
+        }
+        oldCategory.setName(newCategory.getName());
 //        }
         return categoryRepository.save(oldCategory);
     }
