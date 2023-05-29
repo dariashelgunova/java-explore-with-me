@@ -15,14 +15,10 @@ import ru.practicum.model.enums.Status;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventRequestRepository;
 import ru.practicum.repository.UserRepository;
-import ru.practicum.view.RequestView;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,6 +92,10 @@ public class EventRequestServiceImpl implements EventRequestService {
         Event event = eventRepository.getEventByIdOrThrowException(eventId);
         List<EventRequest> requests = findEventRequestsByRequestsIdsIn(requestIds);
         Integer confirmedRequests = eventRequestRepository.findParticipantsAmount(eventId);
+
+        if (event.getParticipantLimit() != 0 && Objects.equals(confirmedRequests, event.getParticipantLimit())) {
+            throw new ConflictException("Достигнуто максимальное количество участников!");
+        }
         if (status == Status.REJECTED) {
             for (EventRequest request : requests) {
                 if (request.getStatus() == Status.CONFIRMED) {
@@ -109,7 +109,6 @@ public class EventRequestServiceImpl implements EventRequestService {
                     throw new ConflictException("Статус заявки уже был изменен!");
                 } else if (event.getParticipantLimit() != 0 && Objects.equals(confirmedRequests, event.getParticipantLimit())) {
                     request.setStatus(Status.REJECTED);
-                    throw new ConflictException("Достигнуто максимальное количество участников!");
                 } else {
                     request.setStatus(Status.CONFIRMED);
                     if (confirmedRequests != null) {

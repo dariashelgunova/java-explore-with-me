@@ -1,6 +1,7 @@
 package ru.practicum.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -70,11 +72,23 @@ public class ControllerExceptionHandler {
     }
 
 
-//    @ExceptionHandler(value = Throwable.class)
-//    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
-//        log.debug(String.valueOf(ex));
-//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
-//    }
+    @ExceptionHandler(value = SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex) {
+        log.debug(String.valueOf(ex));
+        return buildErrorResponse(CONFLICT, ex);
+    }
+
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        log.debug(String.valueOf(ex));
+        return buildErrorResponse(CONFLICT, ex);
+    }
+
+    @ExceptionHandler(value = Throwable.class)
+    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
+        log.debug(String.valueOf(ex));
+        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
+    }
 
     private String getErrorDescription(MethodArgumentNotValidException fieldErrors) {
         return fieldErrors.getFieldErrors().stream()

@@ -214,10 +214,12 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event setConfirmedRequestsToEvent(Event event) {
-        Integer confirmedRequests = eventRequestRepository.findParticipantsAmount(event.getId());
-        if (confirmedRequests == null) {
+        RequestView view = eventRequestRepository.findParticipantsAmountView(event.getId());
+        if (view == null) {
+            event.setConfirmedRequests(0);
             return event;
         }
+        Integer confirmedRequests = view.getConfirmedRequests();
         event.setConfirmedRequests(confirmedRequests);
         return event;
     }
