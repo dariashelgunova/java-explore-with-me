@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
     private void checkIfNameIsUnique(User user) {
         List<User> result = userRepository.findByName(user.getName());
         if (!result.isEmpty()) {
-            throw new ConflictException("Имя категории не может повторяться");
+            throw new ConflictException("Имя пользователя не может повторяться");
         }
     }
 

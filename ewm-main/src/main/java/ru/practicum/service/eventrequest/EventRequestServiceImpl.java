@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Event;
@@ -14,13 +15,18 @@ import ru.practicum.model.enums.Status;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventRequestRepository;
 import ru.practicum.repository.UserRepository;
+import ru.practicum.view.RequestView;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EventRequestServiceImpl implements EventRequestService {
     EventRequestRepository eventRequestRepository;
@@ -84,29 +90,31 @@ public class EventRequestServiceImpl implements EventRequestService {
         return eventRequestRepository.findByEventId(eventId);
     }
 
+    @Transactional
     public List<EventRequest> changeEventRequestStatusPrivate(Integer userId, Integer eventId, List<Integer> requestIds, Status status) {
         userRepository.getUserByIdOrThrowException(userId);
         Event event = eventRepository.getEventByIdOrThrowException(eventId);
         List<EventRequest> requests = findEventRequestsByRequestsIdsIn(requestIds);
+        Integer confirmedRequests = eventRequestRepository.findParticipantsAmount(eventId);
         if (status == Status.REJECTED) {
             for (EventRequest request : requests) {
                 if (request.getStatus() == Status.CONFIRMED) {
                     throw new ConflictException("Нельзя отменить уже подтвержденную заявку");
                 }
                 request.setStatus(Status.REJECTED);
-                eventRequestRepository.save(request);
             }
         } else {
             for (EventRequest request : requests) {
                 if (request.getStatus() == Status.REJECTED) {
                     throw new ConflictException("Статус заявки уже был изменен!");
-                } else if (event.getParticipantLimit() != 0 && Objects.equals(findParticipantsAmountConfirmedByEventId(eventId), event.getParticipantLimit())) {
+                } else if (event.getParticipantLimit() != 0 && Objects.equals(confirmedRequests, event.getParticipantLimit())) {
                     request.setStatus(Status.REJECTED);
-                    eventRequestRepository.save(request);
                     throw new ConflictException("Достигнуто максимальное количество участников!");
                 } else {
                     request.setStatus(Status.CONFIRMED);
-                    eventRequestRepository.save(request);
+                    if (confirmedRequests != null) {
+                        confirmedRequests += 1;
+                    }
                 }
             }
         }

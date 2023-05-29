@@ -70,11 +70,11 @@ public class ControllerExceptionHandler {
     }
 
 
-    @ExceptionHandler(value = Throwable.class)
-    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
-        log.debug(String.valueOf(ex));
-        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public ResponseEntity<ApiError> handleUncheckedException(Throwable ex) {
+//        log.debug(String.valueOf(ex));
+//        return buildErrorResponse(INTERNAL_SERVER_ERROR, ex);
+//    }
 
     private String getErrorDescription(MethodArgumentNotValidException fieldErrors) {
         return fieldErrors.getFieldErrors().stream()

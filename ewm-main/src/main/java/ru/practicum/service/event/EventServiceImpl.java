@@ -19,12 +19,11 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventRequestRepository;
 import ru.practicum.repository.UserRepository;
 import ru.practicum.service.statsservice.StatsService;
+import ru.practicum.view.RequestView;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -224,8 +223,15 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<Event> setConfirmedRequestsToEventsList(List<Event> events) {
+        List<Integer> ids = events.stream()
+                .map(Event::getId).collect(Collectors.toList());
+        List<RequestView> views = eventRequestRepository.findParticipantsAmountView(ids);
+        Map<Integer, Integer> confirmedRequestsByEventId = new HashMap<>();
+        for (RequestView view : views) {
+            confirmedRequestsByEventId.put(view.getEventId(), view.getConfirmedRequests());
+        }
         for (Event event : events) {
-            Integer confirmedRequests = eventRequestRepository.findParticipantsAmount(event.getId());
+            Integer confirmedRequests = confirmedRequestsByEventId.getOrDefault(event.getId(), 0);
             event.setConfirmedRequests(Objects.requireNonNullElse(confirmedRequests, 0));
         }
         return events;
