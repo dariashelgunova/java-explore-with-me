@@ -22,7 +22,6 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EventRequestServiceImpl implements EventRequestService {
     EventRequestRepository eventRequestRepository;
