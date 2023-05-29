@@ -18,6 +18,7 @@ public interface EventRequestRepository extends JpaRepository<EventRequest, Inte
             "group by r.event_id " +
             "order by count(DISTINCT r.user_id) DESC", nativeQuery = true)
     Integer findParticipantsAmount(Integer eventId);
+
     @Query(value = "select r.event_id as eventId, count(DISTINCT r.user_id) as confirmedRequests " +
             "from requests r " +
             "where r.event_id = ?1 AND r.status = 'CONFIRMED' " +
