@@ -24,5 +24,5 @@ public interface CommentService {
 
     void deleteCommentsByEventIdAdmin(Integer eventId);
 
-    List<Comment> findCommentsByEventIdAdmin(Integer eventId);
+    List<Comment> findCommentsByEventIdAdmin(Integer eventId, Integer from, Integer size);
 }

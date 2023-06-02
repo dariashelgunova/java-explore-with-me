@@ -7,12 +7,16 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.model.Comment;
+import ru.practicum.model.Event;
 import ru.practicum.model.User;
+import ru.practicum.model.enums.State;
 import ru.practicum.pageable.OffsetBasedPageRequest;
 import ru.practicum.repository.CommentRepository;
+import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +26,7 @@ import java.util.Objects;
 public class CommentServiceImpl implements CommentService {
     CommentRepository commentRepository;
     UserRepository userRepository;
+    EventRepository eventRepository;
 
     public List<Comment> getCommentsPublic(String text, List<Integer> events, boolean onlyModified,
                                            boolean onlyPositive, LocalDateTime rangeStart, LocalDateTime rangeEnd,
@@ -57,6 +62,10 @@ public class CommentServiceImpl implements CommentService {
 
     public Comment createCommentPrivate(Integer userId, Comment comment) {
         User user = userRepository.getUserByIdOrThrowException(userId);
+        Event event = eventRepository.getEventByIdOrThrowException(comment.getEventId());
+        if (event.getState() != State.PUBLISHED) {
+            throw new ConflictException("Оставить комментарий можно только к опубликованному событию!");
+        }
         comment.setUserId(userId);
         return commentRepository.save(comment);
     }
@@ -78,6 +87,9 @@ public class CommentServiceImpl implements CommentService {
         if (!Objects.equals(existingComment.getUserId(), userId)) {
             throw new ConflictException("У данного пользователя нет доступа к данной операции");
         }
+        if (newComment.getModifiedOn().isAfter(existingComment.getCreatedOn().plus(2, ChronoUnit.HOURS))) {
+            throw new ConflictException("Редактировать комментарий можно только в течение 2 часов после публикации");
+        }
         return changeCommentFields(newComment, existingComment);
     }
 
@@ -87,23 +99,21 @@ public class CommentServiceImpl implements CommentService {
             oldComment.setIsPositive(newComment.getIsPositive());
         }
         oldComment.setWasModified(true);
+        oldComment.setModifiedOn(newComment.getModifiedOn());
         return commentRepository.save(oldComment);
     }
 
     public void deleteCommentByIdAdmin(Integer commentId) {
-        commentRepository.getCommentByIdOrThrowException(commentId);
         commentRepository.deleteById(commentId);
     }
 
     public void deleteCommentsByEventIdAdmin(Integer eventId) {
-        List<Comment> result = commentRepository.findByEventId(eventId);
-        if (!result.isEmpty()) {
-            commentRepository.deleteAll(result);
-        }
+        commentRepository.deleteByEventId(eventId);
     }
 
-    public List<Comment> findCommentsByEventIdAdmin(Integer eventId) {
-        return commentRepository.findByEventId(eventId);
+    public List<Comment> findCommentsByEventIdAdmin(Integer eventId, Integer from, Integer size) {
+        OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
+        return commentRepository.findByEventId(eventId, pageable);
     }
 }
 

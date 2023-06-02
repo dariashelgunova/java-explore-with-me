@@ -33,4 +33,5 @@ public class EventFullDto {
     State state;
     String title;
     int views;
+    int comments;
 }

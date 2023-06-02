@@ -10,6 +10,8 @@ import ru.practicum.mapper.CommentMapper;
 import ru.practicum.model.Comment;
 import ru.practicum.service.comment.CommentService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -21,8 +23,10 @@ public class CommentControllerAdmin {
     CommentMapper commentMapper;
 
     @GetMapping("/{eventId}")
-    public List<CommentDto> getCommentsByEventId(@PathVariable("eventId") Integer eventId) {
-        List<Comment> result = commentService.findCommentsByEventIdAdmin(eventId);
+    public List<CommentDto> getCommentsByEventId(@PathVariable("eventId") Integer eventId,
+                                                 @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
+                                                 @Positive @RequestParam(defaultValue = "10") Integer size) {
+        List<Comment> result = commentService.findCommentsByEventIdAdmin(eventId, from, size);
         return commentMapper.toDtoList(result);
     }
 

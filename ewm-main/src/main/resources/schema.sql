@@ -77,6 +77,7 @@ create table comments (
    created_on timestamp,
    was_modified boolean,
    is_positive boolean,
+   modified_on timestamp,
    primary key (id)
 );
 

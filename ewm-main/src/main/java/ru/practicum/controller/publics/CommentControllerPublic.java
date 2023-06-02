@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.mapper.CommentMapper;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping(path = "/comments")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

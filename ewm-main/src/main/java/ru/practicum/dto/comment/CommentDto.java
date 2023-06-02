@@ -16,4 +16,5 @@ public class CommentDto {
     LocalDateTime createdOn;
     Boolean isPositive;
     Boolean wasModified;
+    LocalDateTime modifiedOn;
 }

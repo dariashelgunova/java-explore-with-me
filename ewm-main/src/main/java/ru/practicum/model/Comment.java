@@ -30,4 +30,6 @@ public class Comment {
     Boolean isPositive;
     @Column(name = "was_modified")
     Boolean wasModified;
+    @Column(name = "modified_on")
+    LocalDateTime modifiedOn;
 }

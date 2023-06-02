@@ -13,7 +13,6 @@ public class NewCommentDto {
     @NotBlank
     @Size(max = 5000)
     String text;
-    Integer userId;
     Integer eventId;
     boolean isPositive = true;
 }

@@ -4,8 +4,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exception.NotFoundObjectException;
 import ru.practicum.model.Comment;
+import ru.practicum.view.CommentView;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,5 +44,24 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
 
     List<Comment> findByUserId(Integer userId);
 
+    List<Comment> findByEventId(Integer eventId, Pageable pageable);
+
     List<Comment> findByEventId(Integer eventId);
+
+    @Transactional
+    void deleteByEventId(Integer eventId);
+
+    @Query(value = "select count(DISTINCT c.event_id) " +
+            "from comments c " +
+            "where c.event_id = ?1 " +
+            "group by c.event_id " +
+            "order by count(DISTINCT c.event_id) DESC", nativeQuery = true)
+    Integer findCommentsAmount(Integer eventId);
+
+    @Query(value = "select c.event_id as eventId, count(DISTINCT c.event_id) as comments " +
+            "from comments c " +
+            "where c.event_id in ?1 " +
+            "group by c.event_id " +
+            "order by count(DISTINCT c.event_id) DESC", nativeQuery = true)
+    List<CommentView> findCommentsView(List<Integer> eventIds);
 }

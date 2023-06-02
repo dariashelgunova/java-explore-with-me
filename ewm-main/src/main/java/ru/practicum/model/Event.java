@@ -56,4 +56,6 @@ public class Event {
     int views;
     @Transient
     List<Compilation> compilations;
+    @Transient
+    int comments;
 }
