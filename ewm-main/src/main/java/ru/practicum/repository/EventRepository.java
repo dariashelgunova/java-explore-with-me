@@ -81,8 +81,8 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
         }
     }
 
-    default Event getEventByIdOrThrowException(Integer userId) {
-        return findById(userId)
+    default Event getEventByIdOrThrowException(Integer eventId) {
+        return findById(eventId)
                 .orElseThrow(() -> new NotFoundObjectException("Объект не был найден"));
     }
 }

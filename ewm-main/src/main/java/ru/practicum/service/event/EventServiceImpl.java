@@ -15,10 +15,12 @@ import ru.practicum.model.enums.SortEnum;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 import ru.practicum.pageable.OffsetBasedPageRequest;
+import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.EventRequestRepository;
 import ru.practicum.repository.UserRepository;
 import ru.practicum.service.statsservice.StatsService;
+import ru.practicum.view.CommentView;
 import ru.practicum.view.RequestView;
 
 import java.time.LocalDateTime;
@@ -33,11 +35,13 @@ public class EventServiceImpl implements EventService {
     UserRepository userRepository;
     StatsService statsService;
     EventRequestRepository eventRequestRepository;
+    CommentRepository commentRepository;
 
 
     public Event findEventByIdPrivate(Integer userId, Integer eventId) {
         userRepository.getUserByIdOrThrowException(userId);
         Event result = getEventByIdOrThrowException(eventId);
+        setCommentsToEvent(result);
         return setConfirmedRequestsToEvent(result);
     }
 
@@ -52,7 +56,8 @@ public class EventServiceImpl implements EventService {
 
     public List<Event> findEventsByUserIdPrivate(Integer userId, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
-        return eventRepository.findByInitiatorId(userId, pageable);
+        List<Event> result = eventRepository.findByInitiatorId(userId, pageable);
+        return setCommentsToEventsList(result);
     }
 
     public Event createEventPrivate(Integer userId, Event event) {
@@ -62,6 +67,7 @@ public class EventServiceImpl implements EventService {
         }
         event.setInitiator(user);
         Event result = eventRepository.save(event);
+        setCommentsToEvent(result);
         return setConfirmedRequestsToEvent(result);
     }
 
@@ -86,6 +92,7 @@ public class EventServiceImpl implements EventService {
             existingEvent.setState(State.CANCELED);
         }
         Event result = eventRepository.save(existingEvent);
+        setCommentsToEvent(result);
         return setConfirmedRequestsToEvent(result);
     }
 
@@ -127,6 +134,7 @@ public class EventServiceImpl implements EventService {
                                       LocalDateTime rangeEnd, Integer from, Integer size) {
         OffsetBasedPageRequest pageable = new OffsetBasedPageRequest(size, from, null);
         List<Event> events = eventRepository.findAllAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
+        setCommentsToEventsList(events);
         return setConfirmedRequestsToEventsList(events);
     }
 
@@ -161,6 +169,7 @@ public class EventServiceImpl implements EventService {
                 event.setState(State.CANCELED);
             }
             Event result = changeEventFields(existingEvent, event);
+            setCommentsToEvent(result);
             return setConfirmedRequestsToEvent(result);
         }
     }
@@ -195,6 +204,7 @@ public class EventServiceImpl implements EventService {
         }
         List<Event> finalResult = statsService.setViewsByEvents(result);
         statsService.sendStats("/events", ip);
+        setCommentsToEventsList(finalResult);
         if (sortEnum == SortEnum.VIEWS) {
             finalResult.sort(Comparator.comparingInt(Event::getViews));
         }
@@ -206,6 +216,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundObjectException("Данное событие не найдено или еще не опубликовано!"));
         statsService.sendStats("/events/" + result.getId(), ip);
         Event event = statsService.setStatsByEvent(result);
+        setCommentsToEvent(event);
         return setConfirmedRequestsToEvent(event);
     }
 
@@ -237,6 +248,27 @@ public class EventServiceImpl implements EventService {
             event.setConfirmedRequests(Objects.requireNonNullElse(confirmedRequests, 0));
         }
         return events;
+    }
+
+    private List<Event> setCommentsToEventsList(List<Event> events) {
+        List<Integer> ids = events.stream()
+                .map(Event::getId).collect(Collectors.toList());
+        List<CommentView> views = commentRepository.findCommentsView(ids);
+        Map<Integer, Integer> commentsByEventId = new HashMap<>();
+        for (CommentView view : views) {
+            commentsByEventId.put(view.getEventId(), view.getComments());
+        }
+        for (Event event : events) {
+            Integer comments = commentsByEventId.getOrDefault(event.getId(), 0);
+            event.setComments(Objects.requireNonNullElse(comments, 0));
+        }
+        return events;
+    }
+
+    private Event setCommentsToEvent(Event event) {
+        int comments = Optional.ofNullable(commentRepository.findCommentsAmount(event.getId())).orElse(0);
+        event.setComments(comments);
+        return event;
     }
 
 }
