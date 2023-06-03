@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
@@ -13,6 +14,7 @@ public class NewCommentDto {
     @NotBlank
     @Size(max = 5000)
     String text;
+    @NotNull
     Integer eventId;
     boolean isPositive = true;
 }
